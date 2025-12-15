@@ -226,7 +226,7 @@ class CategoriaPostsView(ListView):
     model = Post
     template_name = "posts/categorias/posts_por_categoria.html"
     context_object_name = "posts"
-    paginate_by = 3
+    paginate_by = 6 # es la cantidad de posts por página (lo haremos en 2 filas de 3 columnas)
 
     def get_queryset(self):
         return Post.objects.filter(
