@@ -4,13 +4,13 @@
 <h1>{{ post.titulo }}</h1>
 
 {% if post.subtitulo %}
-<h3>{{ post.subtitulo }}</h3>
+    <h3>{{ post.subtitulo }}</h3>
 {% endif %}
 
 <hr>
 
 {% if post.imagen %}
-<img src="{{ post.imagen.url }}" width="400" class="img-fluid mb-3">
+    <img src="{{ post.imagen.url }}" class="img-fluid mb-3">
 {% endif %}
 
 <p>{{ post.texto }}</p>
@@ -20,23 +20,13 @@
 
 <hr>
 
-<!-- SOLO COLABORADORES -->
-{% if user.is_authenticated and user.groups.all and user.groups.all.0.name == "Colaborador" %}
-    <a href="{% url 'posts:editar_post' post.pk %}" class="btn btn-warning">Editar</a>
-    <a href="{% url 'posts:eliminar_post' post.pk %}" class="btn btn-danger">Eliminar</a>
-{% endif %}
 
+<!--   SECCIÓN DE COMENTARIOS                                 -->
 
-<hr>
-
-<!-- ========================================================= -->
-<!--   SECCIÓN DE COMENTARIOS (PASO 3 DEL INFORMATORIO)        -->
-<!-- ========================================================= -->
 
 <h3>Comentarios</h3>
 <br>
 
-<!-- MOSTRAR TODOS LOS COMENTARIOS DEL POST -->
 {% for comentario in post.comentarios.all %}
     <div class="border p-3 mb-3 rounded">
 
@@ -46,18 +36,6 @@
             Escrito por <strong>{{ comentario.autor.username }}</strong> –
             {{ comentario.creado|date:"d/m/Y H:i" }}
         </small>
-
-        <!-- BOTONES SOLO PARA EL AUTOR DEL COMENTARIO -->
-        {% if request.user == comentario.autor %}
-            <div>
-                <a href="{% url 'posts:editar_comentario' comentario.pk %}" class="btn btn-sm btn-outline-warning mt-2">
-                    Editar
-                </a>
-                <a href="{% url 'posts:eliminar_comentario' comentario.pk %}" class="btn btn-sm btn-outline-danger mt-2">
-                    Eliminar
-                </a>
-            </div>
-        {% endif %}
 
     </div>
 
@@ -72,18 +50,16 @@
 
     <h4>Agregar comentario</h4>
 
-    <form method="POST" action="{% url 'posts:agregar_comentario' post.pk %}">
+    <form method="POST">
         {% csrf_token %}
         {{ form_comentario.as_p }}
         <button class="btn btn-primary">Publicar comentario</button>
     </form>
 
 {% else %}
-
     <p>
         <a href="{% url 'usuarios:login' %}">Iniciá sesión</a> para comentar.
     </p>
-
 {% endif %}
 
 {% endblock %}
