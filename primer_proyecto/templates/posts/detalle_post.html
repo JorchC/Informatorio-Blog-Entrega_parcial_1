@@ -21,9 +21,6 @@
 <hr>
 
 
-<!--   SECCIÓN DE COMENTARIOS                                 -->
-
-
 <h3>Comentarios</h3>
 <br>
 
@@ -36,8 +33,17 @@
             Escrito por <strong>{{ comentario.autor.username }}</strong> –
             {{ comentario.creado|date:"d/m/Y H:i" }}
         </small>
-
-    </div>
+        
+        {% if request.user.is_authenticated %}
+            {# Corrección: Usamos la variable 'es_colaborador' pre-calculada en views.py #}
+            {% if comentario.autor == request.user or es_colaborador %}
+                <div class="mt-2">
+                    <a href="{% url 'posts:editar_comentario' comentario.pk %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'posts:eliminar_comentario' comentario.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
+                </div>
+            {% endif %}
+        {% endif %}
+        </div>
 
 {% empty %}
     <p>No hay comentarios todavía. ¡Sé el primero en comentar!</p>
@@ -45,21 +51,25 @@
 
 <hr>
 
-<!-- FORMULARIO PARA AGREGAR COMENTARIO -->
 {% if request.user.is_authenticated %}
 
-    <h4>Agregar comentario</h4>
+    <div class="border p-3 mb-3 rounded bg-light">
+        <h4>Agregar comentario</h4>
 
-    <form method="POST">
-        {% csrf_token %}
-        {{ form_comentario.as_p }}
-        <button class="btn btn-primary">Publicar comentario</button>
-    </form>
+        <form method="POST">
+            {% csrf_token %}
+            {# form_comentario contiene el ComentarioForm instanciado en PostDetailView #}
+            {{ form_comentario.as_p }} 
+
+            <button type="submit" class="btn btn-primary">Publicar comentario</button>
+        </form>
+    </div>
 
 {% else %}
     <p>
         <a href="{% url 'usuarios:login' %}">Iniciá sesión</a> para comentar.
     </p>
 {% endif %}
+
 
 {% endblock %}

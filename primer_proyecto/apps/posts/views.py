@@ -2,13 +2,51 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin # Importación necesaria
 
 from .models import Post, Categoria, Comentario
 from .forms import PostForm, CategoriaForm, ComentarioForm
 
 
+# ==============================================================================
+# MIXIN DE PERMISOS PARA COMENTARIOS (Autor O Colaborador)
+# ==============================================================================
+
+class Autor_o_ColaboradorMixin(UserPassesTestMixin):
+    """
+    Controla el acceso para la edición y eliminación de comentarios.
+    Permite el acceso si:
+    1. El usuario es el autor del comentario (Perfil Miembro o Colaborador)
+    2. El usuario pertenece al grupo 'Colaborador' (puede editar comentarios de otros)
+    """
+    def test_func(self):
+        user = self.request.user
+        
+        # El objeto (Comentario) se obtiene automáticamente.
+        comentario = self.get_object() 
+
+        es_autor = comentario.autor == user
+        # La lógica de Colaborador es la pertenencia al grupo
+        es_colaborador = user.groups.filter(name="Colaborador").exists() 
+        
+        # El usuario puede operar si es el autor O si es un Colaborador
+        return es_autor or es_colaborador
+
+    def handle_no_permission(self):
+        # Manejo de error cuando no tiene permisos
+        messages.error(self.request, "No tenés permisos para editar o eliminar este comentario.")
+        
+        # Redirige al detalle del post asociado
+        try:
+            comentario = self.get_object()
+            return redirect('posts:detalle_post', pk=comentario.post.pk)
+        except:
+            return redirect('index') # Fallback
+
+
+# ==============================================================================
 # POSTS - ADMINISTRAR (SOLO COLABORADOR)
+# ==============================================================================
 
 class PostListView(LoginRequiredMixin, ListView):
     model = Post
@@ -26,6 +64,9 @@ class PostListView(LoginRequiredMixin, ListView):
         return Post.objects.filter(autor=self.request.user).order_by("-publicado")
 
 
+# ==============================================================================
+# POSTS - DETALLE (PÚBLICO Y CARGA DE COMENTARIOS)
+# ==============================================================================
 
 class PostDetailView(DetailView):
     model = Post
@@ -35,33 +76,42 @@ class PostDetailView(DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Pasa una instancia nueva del formulario de comentario al contexto
         context['form_comentario'] = ComentarioForm()
+        
+        # FIX para TemplateSyntaxError: Pre-calcular la condición de Colaborador 
+        # para que la plantilla pueda usarla con una simple variable.
+        context['es_colaborador'] = False
+        if self.request.user.is_authenticated:
+            context['es_colaborador'] = self.request.user.groups.filter(name="Colaborador").exists()
+            
         return context
 
 
     def post(self, request, *args, **kwargs):
-        post = self.get_object()
+        # Cargar: Sólo Usuarios Registrados (Miembros o Colaboradores)
+        if not request.user.is_authenticated:
+            messages.error(request, "Debes iniciar sesión para publicar un comentario.")
+            return redirect(reverse('posts:detalle_post', args=[self.get_object().pk])) 
+            
+        self.object = self.get_object() # Obtener el post
         form = ComentarioForm(request.POST)
 
         if form.is_valid():
             nuevo_comentario = form.save(commit=False)
-            nuevo_comentario.post = post
+            nuevo_comentario.post = self.object          # Asigna el post actual
+            nuevo_comentario.autor = request.user        # Asigna el usuario autenticado
+            nuevo_comentario.save()
+            messages.success(request, "Comentario publicado correctamente.")
             
-            # El usuario debe estar logueado para comentar
-            if request.user.is_authenticated:
-                nuevo_comentario.autor = request.user
-                nuevo_comentario.save()
-                messages.success(request, "Comentario publicado correctamente.")
-            
-            return redirect(reverse('posts:detalle_post', args=[post.pk])) 
+            # Redirige para evitar el doble envío (Patrón Post/Redirect/Get)
+            return redirect(reverse('posts:detalle_post', args=[self.object.pk])) 
 
-        self.object = self.get_object() 
+        # Si el formulario es inválido
         context = self.get_context_data()
-        context['form_comentario'] = form
+        context['form_comentario'] = form # Pasar el formulario con errores
         messages.error(request, "El comentario no pudo ser publicado. Revisa los campos.")
         return self.render_to_response(context)
-
-
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -190,5 +240,23 @@ class CategoriaPostsView(ListView):
         return context
 
 
+# ==============================================================================
+# COMENTARIOS - EDICIÓN Y ELIMINACIÓN (Autor O Colaborador)
+# ==============================================================================
 
+class ComentarioUpdateView(LoginRequiredMixin, Autor_o_ColaboradorMixin, UpdateView):
+    model = Comentario
+    fields = ['contenido'] # Solo permite editar el contenido
+    template_name = 'posts/editar_comentario.html' 
 
+    def get_success_url(self):
+        # Redirige al detalle del post después de la edición
+        return reverse_lazy('posts:detalle_post', kwargs={'pk': self.object.post.pk})
+
+class ComentarioDeleteView(LoginRequiredMixin, Autor_o_ColaboradorMixin, DeleteView):
+    model = Comentario
+    template_name = 'posts/eliminar_comentario.html'
+
+    def get_success_url(self):
+        # Redirige al detalle del post después de la eliminación
+        return reverse_lazy('posts:detalle_post', kwargs={'pk': self.object.post.pk})

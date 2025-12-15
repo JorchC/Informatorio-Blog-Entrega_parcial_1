@@ -7,12 +7,14 @@
 <p>¿Estás seguro que querés eliminar este comentario?</p>
 
 <p class="border p-3 bg-light">
+    {# Muestra el contenido del comentario que se va a eliminar #}
     {{ object.contenido }}
 </p>
 
 <form method="POST">
     {% csrf_token %}
     <button class="btn btn-danger">Sí, eliminar</button>
+    {# Enlace para cancelar, redirige al detalle del post al que pertenece el comentario #}
     <a href="{% url 'posts:detalle_post' object.post.pk %}" class="btn btn-secondary">Cancelar</a>
 </form>
 

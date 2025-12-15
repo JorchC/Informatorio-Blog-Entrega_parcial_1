@@ -1,14 +1,17 @@
 {% extends 'base.html' %}
 {% block contenido %}
 
-<h2>Editar comentario</h2>
+<h2>Editar Comentario</h2>
 <hr>
 
 <form method="POST">
     {% csrf_token %}
+    
+    {# El formulario contiene el campo 'contenido' del modelo Comentario #}
     {{ form.as_p }}
 
-    <button class="btn btn-warning">Actualizar comentario</button>
+    <button class="btn btn-warning">Guardar Cambios</button>
+    {# Enlace para cancelar, redirige al detalle del post al que pertenece el comentario #}
     <a href="{% url 'posts:detalle_post' object.post.pk %}" class="btn btn-secondary">Cancelar</a>
 </form>
 

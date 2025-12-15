@@ -10,6 +10,8 @@ from .views import (
     CategoriaUpdateView,
     CategoriaDeleteView,
     CategoriaPostsView,
+    ComentarioUpdateView,
+    ComentarioDeleteView,
 )
 
 app_name = "posts"
@@ -23,7 +25,7 @@ urlpatterns = [
     path("editar/<int:pk>/", PostUpdateView.as_view(), name="editar_post"),
     path("eliminar/<int:pk>/", PostDeleteView.as_view(), name="eliminar_post"),
 
-    # Detalle (lo dejo disponible como lo tenías)
+    # Detalle (Esta ruta también maneja la creación de comentarios)
     path("<int:pk>/", PostDetailView.as_view(), name="detalle_post"),
 
 
@@ -39,4 +41,10 @@ urlpatterns = [
     # POSTS POR CATEGORÍA (PÚBLICO)
     
     path("categoria/<int:pk>/", CategoriaPostsView.as_view(), name="posts_por_categoria"),
+    
+    
+    # --- COMENTARIOS (ADMIN AUTOR O COLABORADOR) ---
+    # Rutas para editar y eliminar comentarios específicos por su PK
+    path("comentario/editar/<int:pk>/", ComentarioUpdateView.as_view(), name="editar_comentario"),
+    path("comentario/eliminar/<int:pk>/", ComentarioDeleteView.as_view(), name="eliminar_comentario"),
 ]
