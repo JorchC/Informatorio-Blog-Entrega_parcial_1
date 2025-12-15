@@ -10,6 +10,7 @@ from .views import (
     CategoriaUpdateView,
     CategoriaDeleteView,
     CategoriaPostsView,
+    ComentarioCreateView, 
     ComentarioUpdateView,
     ComentarioDeleteView,
 )
@@ -25,11 +26,10 @@ urlpatterns = [
     path("editar/<int:pk>/", PostUpdateView.as_view(), name="editar_post"),
     path("eliminar/<int:pk>/", PostDeleteView.as_view(), name="eliminar_post"),
 
-    # Detalle (Esta ruta también maneja la creación de comentarios)
+    # Detalle del Post (PÚBLICO)
     path("<int:pk>/", PostDetailView.as_view(), name="detalle_post"),
 
 
-    
     # CATEGORÍAS (ADMIN COLABORADOR)
     
     path("categorias/", CategoriaListView.as_view(), name="lista_categorias"),
@@ -43,8 +43,10 @@ urlpatterns = [
     path("categoria/<int:pk>/", CategoriaPostsView.as_view(), name="posts_por_categoria"),
     
     
-    # --- COMENTARIOS (ADMIN AUTOR O COLABORADOR) ---
-    # Rutas para editar y eliminar comentarios específicos por su PK
+    # COMENTARIOS
+    # Recibe el pk del post y llama a la vista de creación de comentarios
+    path("post/<int:pk_post>/comentar/", ComentarioCreateView.as_view(), name="agregar_comentario"), 
+    # Reciben el pk del comentario a editar/eliminar
     path("comentario/editar/<int:pk>/", ComentarioUpdateView.as_view(), name="editar_comentario"),
     path("comentario/eliminar/<int:pk>/", ComentarioDeleteView.as_view(), name="eliminar_comentario"),
 ]
