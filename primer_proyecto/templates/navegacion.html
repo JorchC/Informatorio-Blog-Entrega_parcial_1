@@ -1,0 +1,65 @@
+{% load static %}
+<nav class="navbar" data-bs-theme="dark">
+    <div class="container-fluid">
+
+        <a href="{% url 'index' %}">
+            <img src="{% static 'img/logo.png' %}" alt="Logo">
+        </a>
+
+        <ul class="nav nav-underline">
+
+            {% if user.is_authenticated %}
+            <div class="list-group-item d-flex gap-3 py-3">
+                <img src="{{ user.imagen.url }}" alt="perfil"
+                     width="40" height="40"
+                     class="rounded-circle flex-shrink-0">
+
+                <ul class="navbar-nav">
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle"
+                                type="button"
+                                data-bs-toggle="dropdown">
+                            {{ user.username }}
+                        </button>
+
+                        <ul class="dropdown-menu">
+
+                            <!-- PERFIL (si existe esa vista) -->
+                            <li>
+                                <a class="dropdown-item"
+                                   href="{% url 'usuarios:registrar' %}">
+                                    Perfil
+                                </a>
+                            </li>
+
+                            <!-- LOGOUT CORRECTO -->
+                            <li>
+                                <form method="post" action="{% url 'usuarios:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">
+                                        Cerrar sesión
+                                    </button>
+                                </form>
+                            </li>
+
+                        </ul>
+                    </div>
+                </ul>
+            </div>
+
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'usuarios:registrar' %}">
+                    Registrarse
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'usuarios:login' %}">
+                    Iniciar sesión
+                </a>
+            </li>
+            {% endif %}
+
+        </ul>
+    </div>
+</nav>

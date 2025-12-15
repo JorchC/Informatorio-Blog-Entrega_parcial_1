@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+<h2>Categorías</h2>
+
+{% if user.is_authenticated and user.groups.all and user.groups.all.0.name == "Colaborador" %}
+    <a href="{% url 'posts:agregar_categoria' %}" class="btn btn-primary mb-3">
+        Agregar Categoría
+    </a>
+{% endif %}
+
+<table class="table table-striped">
+    <tr>
+        <th>Nombre</th>
+
+        {% if user.is_authenticated and user.groups.all and user.groups.all.0.name == "Colaborador" %}
+            <th>Acciones</th>
+        {% endif %}
+    </tr>
+
+    {% for cat in categorias %}
+    <tr>
+        <td>{{ cat.nombre }}</td>
+
+        {% if user.is_authenticated and user.groups.all and user.groups.all.0.name == "Colaborador" %}
+            <td>
+                <a href="{% url 'posts:editar_categoria' cat.pk %}"
+                   class="btn btn-warning btn-sm">
+                    Editar
+                </a>
+                <a href="{% url 'posts:eliminar_categoria' cat.pk %}"
+                   class="btn btn-danger btn-sm">
+                    Eliminar
+                </a>
+            </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

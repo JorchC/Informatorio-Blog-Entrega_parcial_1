@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+<h2>Agregar comentario</h2>
+<hr>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button class="btn btn-primary">Publicar comentario</button>
+    <a href="{% url 'posts:detalle_post' pk=kwargs.pk %}" class="btn btn-secondary">Cancelar</a>
+</form>
+
+{% endblock %}

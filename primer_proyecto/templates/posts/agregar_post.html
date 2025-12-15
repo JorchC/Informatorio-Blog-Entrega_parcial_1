@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+<h1>Crear nuevo post</h1>
+<hr>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-success">Publicar</button>
+</form>
+
+<br>
+<a href="{% url 'posts:lista_posts' %}">Volver al listado</a>
+
+{% endblock %}

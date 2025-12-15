@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<h2 class="mb-4">
+    Categoría: <span class="text-primary">{{ categoria.nombre }}</span>
+</h2>
+
+{% if posts %}
+    <div class="row">
+        {% for post in posts %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    
+                    {% if post.imagen %}
+                        <img src="{{ post.imagen.url }}" class="card-img-top">
+                    {% endif %}
+
+                    <div class="card-body">
+                        <h5 class="card-title">{{ post.titulo }}</h5>
+                        <p class="card-text">
+                            {{ post.texto|truncatewords:20 }}
+                        </p>
+
+                        <a href="{% url 'posts:detalle_post' post.pk %}"
+                           class="btn btn-primary btn-sm">
+                            Leer más
+                        </a>
+                    </div>
+
+                    <div class="card-footer text-muted">
+                        Publicado: {{ post.publicado|date:"d/m/Y" }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No hay artículos en esta categoría.</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Administrar Posts</h2>
+
+    <a href="{% url 'posts:agregar_post' %}" class="btn btn-primary">
+        Crear nuevo artículo
+    </a>
+</div>
+
+<hr>
+
+{% if posts %}
+    <ul class="list-group list-group-flush">
+
+        {% for post in posts %}
+            <li class="list-group-item">
+                <div class="d-flex align-items-center">
+
+                    <!-- MINIATURA -->
+                    <div class="me-3">
+                        <img src="{{ post.imagen.url }}"
+                             alt="{{ post.titulo }}"
+                             width="80"
+                             height="80"
+                             style="object-fit: cover; border-radius: 6px;">
+                    </div>
+
+                    <!-- INFO POST -->
+                    <div>
+                        <a href="{% url 'posts:detalle_post' post.pk %}">
+                            <strong>{{ post.titulo }}</strong>
+                        </a>
+                        <br>
+                        <small class="text-muted">
+                            Publicado: {{ post.publicado|date:"d/m/Y H:i" }}
+                        </small>
+                    </div>
+
+                </div>
+            </li>
+        {% endfor %}
+
+    </ul>
+
+    <!-- PAGINADOR -->
+    <div class="mt-4">
+        {% include "paginador.html" %}
+    </div>
+
+{% else %}
+    <p>No tienes posts creados todavía.</p>
+{% endif %}
+
+{% endblock %}

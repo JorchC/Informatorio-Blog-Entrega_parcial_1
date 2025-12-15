@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+<h2 class="mb-4">Iniciar sesión</h2>
+
+<form method="POST" class="mb-3">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Ingresar</button>
+</form>
+
+<p>
+    ¿No tenés cuenta?
+    <a href="{% url 'usuarios:registrar' %}" class="text-info">Registrate aquí</a>
+</p>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-info mt-3">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+{% endblock %}

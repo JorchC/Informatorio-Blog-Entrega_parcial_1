@@ -1,0 +1,143 @@
+Listado de rutas de carpetas para el volumen Windows-SSD
+El número de serie del volumen es E8C8-B00B
+C:.
+¦   estructura_proyecto.txt
+¦   manage.py
+¦   requirements.txt
+¦   
++---apps
+¦   ¦   __init__.py
+¦   ¦   
+¦   +---posts
+¦   ¦   ¦   admin.py
+¦   ¦   ¦   apps.py
+¦   ¦   ¦   context_processors.py
+¦   ¦   ¦   forms.py
+¦   ¦   ¦   models.py
+¦   ¦   ¦   tests.py
+¦   ¦   ¦   urls.py
+¦   ¦   ¦   views.py
+¦   ¦   ¦   __init__.py
+¦   ¦   ¦   
+¦   ¦   +---migrations
+¦   ¦   ¦   ¦   0001_initial.py
+¦   ¦   ¦   ¦   __init__.py
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---__pycache__
+¦   ¦   ¦           0001_initial.cpython-314.pyc
+¦   ¦   ¦           __init__.cpython-314.pyc
+¦   ¦   ¦           
+¦   ¦   +---__pycache__
+¦   ¦           admin.cpython-314.pyc
+¦   ¦           apps.cpython-314.pyc
+¦   ¦           context_processors.cpython-314.pyc
+¦   ¦           forms.cpython-314.pyc
+¦   ¦           models.cpython-314.pyc
+¦   ¦           urls.cpython-314.pyc
+¦   ¦           views.cpython-314.pyc
+¦   ¦           __init__.cpython-314.pyc
+¦   ¦           
+¦   +---usuarios
+¦   ¦   ¦   admin.py
+¦   ¦   ¦   apps.py
+¦   ¦   ¦   forms.py
+¦   ¦   ¦   models.py
+¦   ¦   ¦   signals.py
+¦   ¦   ¦   tests.py
+¦   ¦   ¦   urls.py
+¦   ¦   ¦   views.py
+¦   ¦   ¦   __init__.py
+¦   ¦   ¦   
+¦   ¦   +---migrations
+¦   ¦   ¦   ¦   0001_initial.py
+¦   ¦   ¦   ¦   __init__.py
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---__pycache__
+¦   ¦   ¦           0001_initial.cpython-314.pyc
+¦   ¦   ¦           __init__.cpython-314.pyc
+¦   ¦   ¦           
+¦   ¦   +---__pycache__
+¦   ¦           admin.cpython-314.pyc
+¦   ¦           apps.cpython-314.pyc
+¦   ¦           forms.cpython-314.pyc
+¦   ¦           models.cpython-314.pyc
+¦   ¦           signals.cpython-314.pyc
+¦   ¦           urls.cpython-314.pyc
+¦   ¦           views.cpython-314.pyc
+¦   ¦           __init__.cpython-314.pyc
+¦   ¦           
+¦   +---__pycache__
+¦           __init__.cpython-314.pyc
+¦           
++---media
+¦   +---imagenes
+¦   ¦   +---noticias
+¦   ¦   ¦       noticia1.png
+¦   ¦   ¦       
+¦   ¦   +---usuarios
+¦   ¦           user_default.png
+¦   ¦           
+¦   +---posts
+¦           Post-It.jpg
+¦           Post-It_740kOgZ.jpg
+¦           Post-It_DamFTNi.jpg
+¦           Post-It_RMdzk1o.jpg
+¦           Post-It_TDDdAW9.jpg
+¦           post_default.png
+¦           WhatsApp_Image_2025-12-07_at_11.20.20.jpeg
+¦           
++---primer_proyecto
+¦   ¦   asgi.py
+¦   ¦   settings.py
+¦   ¦   urls.py
+¦   ¦   views.py
+¦   ¦   wsgi.py
+¦   ¦   __init__.py
+¦   ¦   
+¦   +---__pycache__
+¦           settings.cpython-314.pyc
+¦           urls.cpython-314.pyc
+¦           views.cpython-314.pyc
+¦           wsgi.cpython-314.pyc
+¦           __init__.cpython-314.pyc
+¦           
++---static
+¦   +---css
+¦   ¦       estilos.css
+¦   ¦       
+¦   +---imagenes
+¦           fondo_blog.jpg
+¦           logo.png
+¦           TeoBits (2).png
+¦           TeoBits.png
+¦           
++---templates
+    ¦   base.html
+    ¦   index.html
+    ¦   navegacion.html
+    ¦   paginador.html
+    ¦   
+    +---opiniones
+    +---posts
+    ¦   ¦   agregar_comentario.html
+    ¦   ¦   agregar_post.html
+    ¦   ¦   detalle_post.html
+    ¦   ¦   editar_comentario.html
+    ¦   ¦   editar_post.html
+    ¦   ¦   eliminar_comentario.html
+    ¦   ¦   eliminar_post.html
+    ¦   ¦   lista_posts.html
+    ¦   ¦   
+    ¦   +---categorias
+    ¦           crear_categoria.html
+    ¦           editar_categoria.html
+    ¦           eliminar_categoria.html
+    ¦           lista_categorias.html
+    ¦           posts_por_categoria.html
+    ¦           
+    +---registration
+    ¦       login.html
+    ¦       logout.html
+    ¦       registrar.html
+    ¦       
+    +---usuarios

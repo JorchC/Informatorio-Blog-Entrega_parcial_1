@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+<h1>Editar artículo</h1>
+<hr>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+</form>
+
+<br>
+<a href="{% url 'posts:detalle_post' post.pk %}">Volver al artículo</a>
+
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block contenido %}
+
+<!-- HERO / BIENVENIDA -->
+<div class="card text-bg-dark mb-5">
+    <img class="card-img" src="{% static 'imagenes/fondo_blog.jpg' %}" alt="Portada del blog">
+    <div class="card-img-overlay d-flex justify-content-center align-items-center">
+        <div class="text-white text-center" style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px;">
+            <h2 class="mb-2">
+                Bienvenid@ a TeoBits 
+            </h2>
+            <h5>
+                Un espacio para reflexionar, compartir y crecer juntos
+            </h5>
+        </div>
+    </div>
+</div>
+
+<!-- MENSAJE DE USUARIO -->
+<div class="container mb-4">
+    {% if user.is_authenticated %}
+        <div class="alert alert-success text-center">
+            👋 Hola <strong>{{ user.username }}</strong>, gracias por volver.
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            ¿sos nuevo?
+            <a href="{% url 'usuarios:registrar' %}">Registrate</a> o
+            <a href="{% url 'usuarios:login' %}">iniciá sesión</a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- LISTADO DE POSTS -->
+<div class="container">
+    <h3 class="mb-4">Últimos Artículos Publicados</h3>
+
+    {% if posts %}
+        <div class="row">
+            {% for post in posts %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+
+                        {% if post.imagen %}
+                            <img src="{{ post.imagen.url }}" class="card-img-top" alt="{{ post.titulo }}">
+                        {% endif %}
+
+                        <div class="card-body">
+                            <h5 class="card-title">{{ post.titulo }}</h5>
+                            <p class="card-text">
+                                {{ post.texto|truncatewords:20 }}
+                            </p>
+
+                            <a href="{% url 'posts:detalle_post' post.pk %}"
+                               class="btn btn-primary btn-sm">
+                                Leer más
+                            </a>
+                        </div>
+
+                        <div class="card-footer text-muted">
+                            Publicado el {{ post.publicado|date:"d/m/Y" }}
+                            {% if post.categoria %}
+                                | Categoría: {{ post.categoria.nombre }}
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- PAGINADOR -->
+        {% include "paginador.html" %}
+
+    {% else %}
+        <p class="text-muted">Todavía no hay artículos publicados.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

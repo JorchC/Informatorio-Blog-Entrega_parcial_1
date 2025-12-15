@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+<h2>Editar comentario</h2>
+<hr>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button class="btn btn-warning">Actualizar comentario</button>
+    <a href="{% url 'posts:detalle_post' object.post.pk %}" class="btn btn-secondary">Cancelar</a>
+</form>
+
+{% endblock %}
