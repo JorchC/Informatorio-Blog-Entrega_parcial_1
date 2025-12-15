@@ -26,6 +26,7 @@ urlpatterns = [
     # Detalle (lo dejo disponible como lo tenías)
     path("<int:pk>/", PostDetailView.as_view(), name="detalle_post"),
 
+
     
     # CATEGORÍAS (ADMIN COLABORADOR)
     

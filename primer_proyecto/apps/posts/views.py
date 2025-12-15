@@ -1,12 +1,11 @@
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Post, Categoria
-from .forms import PostForm, CategoriaForm
-
+from .models import Post, Categoria, Comentario
+from .forms import PostForm, CategoriaForm, ComentarioForm
 
 
 # POSTS - ADMINISTRAR (SOLO COLABORADOR)
@@ -27,10 +26,42 @@ class PostListView(LoginRequiredMixin, ListView):
         return Post.objects.filter(autor=self.request.user).order_by("-publicado")
 
 
+
 class PostDetailView(DetailView):
     model = Post
     template_name = "posts/detalle_post.html"
     context_object_name = "post"
+
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_comentario'] = ComentarioForm()
+        return context
+
+
+    def post(self, request, *args, **kwargs):
+        post = self.get_object()
+        form = ComentarioForm(request.POST)
+
+        if form.is_valid():
+            nuevo_comentario = form.save(commit=False)
+            nuevo_comentario.post = post
+            
+            # El usuario debe estar logueado para comentar
+            if request.user.is_authenticated:
+                nuevo_comentario.autor = request.user
+                nuevo_comentario.save()
+                messages.success(request, "Comentario publicado correctamente.")
+            
+            return redirect(reverse('posts:detalle_post', args=[post.pk])) 
+
+        self.object = self.get_object() 
+        context = self.get_context_data()
+        context['form_comentario'] = form
+        messages.error(request, "El comentario no pudo ser publicado. Revisa los campos.")
+        return self.render_to_response(context)
+
+
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -157,3 +188,7 @@ class CategoriaPostsView(ListView):
         context = super().get_context_data(**kwargs)
         context["categoria"] = Categoria.objects.get(pk=self.kwargs["pk"])
         return context
+
+
+
+
