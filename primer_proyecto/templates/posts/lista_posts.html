@@ -3,8 +3,9 @@
 {% block contenido %}
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Administrar Posts</h2>
+    <h2>Administrar Artículos</h2>
 
+    {# Botón de crear nuevo artículo #}
     <a href="{% url 'posts:agregar_post' %}" class="btn btn-primary">
         Crear nuevo artículo
     </a>
@@ -12,46 +13,110 @@
 
 <hr>
 
+{# --- INICIO DE CONTROLES DE FILTRADO Y ORDENAMIENTO --- #}
+<div class="card p-3 mb-4 shadow-sm bg-light">
+    {# El formulario usa el método GET para aplicar los filtros #}
+    <form method="GET" class="row g-3 align-items-end">
+
+        <div class="col-md-6 col-lg-4">
+            <label for="id_orden" class="form-label">Ordenar por:</label>
+            <select name="orden" id="id_orden" class="form-select">
+                <option value="-publicado" {% if orden_actual == '-publicado' %}selected{% endif %}>Fecha: Reciente → Antiguo</option>
+                <option value="publicado" {% if orden_actual == 'publicado' %}selected{% endif %}>Fecha: Antiguo → Reciente</option>
+                <option value="titulo" {% if orden_actual == 'titulo' %}selected{% endif %}>Título: A → Z (Ascendente)</option>
+                <option value="-titulo" {% if orden_actual == '-titulo' %}selected{% endif %}>Título: Z → A (Descendente)</option>
+            </select>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <label for="id_categoria" class="form-label">Filtrar por Categoría:</label>
+            <select name="categoria" id="id_categoria" class="form-select">
+                <option value="todas" {% if categoria_actual_id == 'todas' %}selected{% endif %}>Todas las Categorías</option>
+                
+                {# Iterar sobre las categorías pasadas desde el contexto de la vista #}
+                {% for cat in categorias %}
+                    <option value="{{ cat.pk }}" 
+                            {# La comparación debe ser con el pk convertido a string para coincidir con el valor GET #}
+                            {% if categoria_actual_id == cat.pk|stringformat:"i" %}selected{% endif %}>
+                        {{ cat.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-lg-4">
+            <button type="submit" class="btn btn-dark w-100">Aplicar Filtros</button>
+        </div>
+
+    </form>
+</div>
+{# --- FIN DE CONTROLES DE FILTRADO Y ORDENAMIENTO --- #}
+
+
 {% if posts %}
-    <ul class="list-group list-group-flush">
-
-        {% for post in posts %}
-            <li class="list-group-item">
-                <div class="d-flex align-items-center">
-
-                    <!-- MINIATURA -->
-                    <div class="me-3">
-                        <img src="{{ post.imagen.url }}"
-                             alt="{{ post.titulo }}"
-                             width="80"
-                             height="80"
-                             style="object-fit: cover; border-radius: 6px;">
-                    </div>
-
-                    <!-- INFO POST -->
-                    <div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            
+            {# Encabezado (header) de la tabla con color naranja #}
+            <thead class="text-white" style="background-color: #ff9800 !important; border-color: #ff9800 !important;"> 
+                <tr>
+                    <th scope="col"></th> <th scope="col">Título</th>
+                    <th scope="col">Categoría</th>
+                    <th scope="col">Autor</th>
+                    <th scope="col">Fecha Publicación</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+                {% for post in posts %}
+                <tr>
+                    <td>
+                        {% if post.imagen %}
+                            <img src="{{ post.imagen.url }}"
+                                 alt="{{ post.titulo }}"
+                                 width="50"
+                                 height="50"
+                                 style="object-fit: cover; border-radius: 4px;">
+                        {% endif %}
+                    </td>
+                    
+                    <td>
                         <a href="{% url 'posts:detalle_post' post.pk %}">
                             <strong>{{ post.titulo }}</strong>
                         </a>
-                        <br>
-                        <small class="text-muted">
-                            Publicado: {{ post.publicado|date:"d/m/Y H:i" }}
-                        </small>
-                    </div>
+                    </td>
+                    
+                    <td>{{ post.categoria.nombre|default:"Sin Categoría" }}</td>
+                    
+                    <td>{{ post.autor.username }}</td>
+                    
+                    <td>{{ post.publicado|date:"d/m/Y H:i" }}</td>
+                    
+                    <td>
+                        <a href="{% url 'posts:editar_post' post.pk %}"
+                           class="btn btn-warning btn-sm"
+                           title="Editar">
+                           Editar
+                        </a>
+                        <a href="{% url 'posts:eliminar_post' post.pk %}"
+                           class="btn btn-danger btn-sm"
+                           title="Eliminar">
+                           Eliminar
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-                </div>
-            </li>
-        {% endfor %}
-
-    </ul>
-
-    <!-- PAGINADOR -->
     <div class="mt-4">
-        {% include "paginador.html" %}
+        {% include "paginador.html" with orden_actual=orden_actual categoria_actual_id=categoria_actual_id %}
     </div>
 
 {% else %}
-    <p>No tienes posts creados todavía.</p>
+    <p class="text-muted">No tienes artículos publicados con los filtros actuales.</p>
 {% endif %}
 
 {% endblock %}

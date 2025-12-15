@@ -1,36 +1,47 @@
 {% if is_paginated %}
+    {# Creamos los parámetros de filtro que ya están activos #}
+    {% with filtro_params='&orden='|add:orden_actual|add:'&categoria='|add:categoria_actual_id %}
     <nav>
         <ul class="pagination pagination-circle mg-b-0 justify-content-center">
+            
+            {# Primera #}
             {% if page_obj.number == 1 %}
                 <li class="page-item disabled"><a class="page-link">Primera</a></li>
             {% else %}
-                <li class="page-item"><a class="page-link" href="?page=1">Primera</a></li>
+                <li class="page-item"><a class="page-link" href="?page=1{{ filtro_params }}">Primera</a></li>
             {% endif %}
             
+            {# Anterior #}
             {% if page_obj.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{{ filtro_params }}">Anterior</a></li>
             {% else %}
                 <li class="page-item disabled"><a class="page-link">Anterior</a></li>
             {% endif %}
 
+            {# Páginas individuales: Muestra 5 páginas centradas alrededor de la actual #}
             {% for i in paginator.page_range %}
-                {% if page_obj.number|add:'-1' <= i and page_obj.number|add:'1' >= i %}
-                    <li class="page-item {% if page_obj.number == i %}active{% endif %}"><a class="page-link" href="?page={{i}}">{{ i }}</a></li>
-                {% else %}
+                {% if i >= page_obj.number|add:'-2' and i <= page_obj.number|add:'2' %}
+                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                        <a class="page-link" href="?page={{i}}{{ filtro_params }}">{{ i }}</a>
+                    </li>
                 {% endif %}
             {% endfor %}
             
+            {# Siguiente #}
             {% if page_obj.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{{ filtro_params }}">Siguiente</a></li>
             {% else %}
                 <li class="page-item disabled"><a class="page-link">Siguiente</a></li>
             {% endif %}
 
+            {# Última #}
             {% if page_obj.number == paginator.num_pages %}
                 <li class="page-item disabled"><a class="page-link">Última</a></li>
             {% else %}
-                <li class="page-item"><a class="page-link" href="?page={{paginator.num_pages}}">Última</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ paginator.num_pages }}{{ filtro_params }}">Última</a></li>
             {% endif %}
+
         </ul>
     </nav>
+    {% endwith %}
 {% endif %}

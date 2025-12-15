@@ -2,15 +2,15 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin # Importación necesaria
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin 
 
 from .models import Post, Categoria, Comentario
 from .forms import PostForm, CategoriaForm, ComentarioForm
 
 
-# ==============================================================================
+
 # MIXIN DE PERMISOS PARA COMENTARIOS (Autor O Colaborador)
-# ==============================================================================
+
 
 class Autor_o_ColaboradorMixin(UserPassesTestMixin):
     """
@@ -33,26 +33,24 @@ class Autor_o_ColaboradorMixin(UserPassesTestMixin):
         return es_autor or es_colaborador
 
     def handle_no_permission(self):
-        # Manejo de error cuando no tiene permisos
         messages.error(self.request, "No tenés permisos para editar o eliminar este comentario.")
-        
-        # Redirige al detalle del post asociado
         try:
             comentario = self.get_object()
+            # Redirige al detalle del post asociado al comentario
             return redirect('posts:detalle_post', pk=comentario.post.pk)
         except:
-            return redirect('index') # Fallback
+            return redirect('index')
 
 
-# ==============================================================================
-# POSTS - ADMINISTRAR (SOLO COLABORADOR)
-# ==============================================================================
+
+# POSTS - ADMINISTRAR (SOLO COLABORADOR) 
+
 
 class PostListView(LoginRequiredMixin, ListView):
     model = Post
     template_name = "posts/lista_posts.html"
     context_object_name = "posts"
-    paginate_by = 10
+    paginate_by = 10 # Cantidad de posts por página en el administrador
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.groups.filter(name="Colaborador").exists():
@@ -61,57 +59,61 @@ class PostListView(LoginRequiredMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        return Post.objects.filter(autor=self.request.user).order_by("-publicado")
+        # 1. Base del Queryset: Mostrar solo los posts del usuario colaborador actual
+        queryset = Post.objects.filter(autor=self.request.user)
+        
+        # 2. Obtener parámetros de filtrado y ordenamiento de la URL
+        orden = self.request.GET.get('orden', '-publicado') # Por defecto: Reciente a Antiguo
+        categoria_id = self.request.GET.get('categoria', None)
+
+        # 3. Aplicar Filtro por Categoría
+        if categoria_id and categoria_id != 'todas':
+            try:
+                # Filtrar por el ID de la categoría
+                queryset = queryset.filter(categoria_id=int(categoria_id))
+            except ValueError:
+                pass # Ignorar si el ID no es un número válido
+        
+        # 4. Aplicar Ordenamiento
+        # Las opciones en el template son: '-titulo', 'titulo', '-publicado', 'publicado'
+        if orden in ['-titulo', 'titulo', '-publicado', 'publicado']:
+            queryset = queryset.order_by(orden)
+        else:
+             # Si el parámetro es inválido, usar el orden por defecto
+            queryset = queryset.order_by('-publicado')
+
+        # Usar select_related para optimizar la consulta
+        return queryset.select_related('categoria', 'autor')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Pasar todas las categorías al contexto para el menú desplegable de filtro
+        context['categorias'] = Categoria.objects.all().order_by('nombre')
+        
+        # Pasar los valores de filtro y ordenamiento actuales al contexto
+        context['orden_actual'] = self.request.GET.get('orden', '-publicado')
+        context['categoria_actual_id'] = self.request.GET.get('categoria', 'todas')
+        
+        return context
 
 
-# ==============================================================================
-# POSTS - DETALLE (PÚBLICO Y CARGA DE COMENTARIOS)
-# ==============================================================================
+# POSTS - VISTAS CRUD
+
 
 class PostDetailView(DetailView):
     model = Post
     template_name = "posts/detalle_post.html"
     context_object_name = "post"
 
-    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Pasa una instancia nueva del formulario de comentario al contexto
-        context['form_comentario'] = ComentarioForm()
-        
-        # FIX para TemplateSyntaxError: Pre-calcular la condición de Colaborador 
-        # para que la plantilla pueda usarla con una simple variable.
-        context['es_colaborador'] = False
-        if self.request.user.is_authenticated:
-            context['es_colaborador'] = self.request.user.groups.filter(name="Colaborador").exists()
-            
+        # 1. Agrega el formulario de comentarios
+        context["form"] = ComentarioForm()
+        # 2. Pre-calcula si el usuario es colaborador (para la edición de comentarios)
+        user = self.request.user
+        context["es_colaborador"] = user.groups.filter(name="Colaborador").exists()
         return context
-
-
-    def post(self, request, *args, **kwargs):
-        # Cargar: Sólo Usuarios Registrados (Miembros o Colaboradores)
-        if not request.user.is_authenticated:
-            messages.error(request, "Debes iniciar sesión para publicar un comentario.")
-            return redirect(reverse('posts:detalle_post', args=[self.get_object().pk])) 
-            
-        self.object = self.get_object() # Obtener el post
-        form = ComentarioForm(request.POST)
-
-        if form.is_valid():
-            nuevo_comentario = form.save(commit=False)
-            nuevo_comentario.post = self.object          # Asigna el post actual
-            nuevo_comentario.autor = request.user        # Asigna el usuario autenticado
-            nuevo_comentario.save()
-            messages.success(request, "Comentario publicado correctamente.")
-            
-            # Redirige para evitar el doble envío (Patrón Post/Redirect/Get)
-            return redirect(reverse('posts:detalle_post', args=[self.object.pk])) 
-
-        # Si el formulario es inválido
-        context = self.get_context_data()
-        context['form_comentario'] = form # Pasar el formulario con errores
-        messages.error(request, "El comentario no pudo ser publicado. Revisa los campos.")
-        return self.render_to_response(context)
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -120,34 +122,34 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     template_name = "posts/agregar_post.html"
     success_url = reverse_lazy("posts:lista_posts")
 
+    def form_valid(self, form):
+        # Asigna el autor (usuario logueado) antes de guardar el post
+        form.instance.autor = self.request.user
+        messages.success(self.request, "Artículo publicado exitosamente.")
+        return super().form_valid(form)
+
     def dispatch(self, request, *args, **kwargs):
         if not request.user.groups.filter(name="Colaborador").exists():
-            messages.error(request, "No tenés permisos para crear artículos.")
-            return redirect("posts:lista_posts")
+            messages.error(request, "No tenés permisos para crear posts.")
+            return redirect("index")
         return super().dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        nuevo_post = form.save(commit=False)
-        nuevo_post.autor = self.request.user
-        nuevo_post.save()
-        messages.success(self.request, "Artículo creado correctamente.")
-        return super().form_valid(form)
 
 
 class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
     form_class = PostForm
     template_name = "posts/editar_post.html"
+    
+    def get_success_url(self):
+        # Redirige al detalle del post después de la edición
+        messages.success(self.request, "Artículo actualizado exitosamente.")
+        return reverse_lazy("posts:detalle_post", kwargs={"pk": self.object.pk})
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.groups.filter(name="Colaborador").exists():
-            messages.error(request, "No tenés permisos para editar artículos.")
+        if self.get_object().autor != self.request.user:
+            messages.error(request, "No tenés permisos para editar este post.")
             return redirect("posts:lista_posts")
         return super().dispatch(request, *args, **kwargs)
-
-    def get_success_url(self):
-        messages.success(self.request, "Artículo actualizado correctamente.")
-        return reverse("posts:detalle_post", args=[self.object.pk])
 
 
 class PostDeleteView(LoginRequiredMixin, DeleteView):
@@ -156,18 +158,15 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("posts:lista_posts")
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.groups.filter(name="Colaborador").exists():
-            messages.error(request, "No tenés permisos para eliminar artículos.")
+        if self.get_object().autor != self.request.user:
+            messages.error(request, "No tenés permisos para eliminar este post.")
             return redirect("posts:lista_posts")
         return super().dispatch(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, "Artículo eliminado correctamente.")
-        return super().delete(request, *args, **kwargs)
 
 
 
 # CATEGORÍAS - ADMINISTRAR (SOLO COLABORADOR)
+
 
 class CategoriaListView(LoginRequiredMixin, ListView):
     model = Categoria
@@ -222,11 +221,13 @@ class CategoriaDeleteView(LoginRequiredMixin, DeleteView):
 
 # POSTS POR CATEGORÍA (PÚBLICO)
 
+
 class CategoriaPostsView(ListView):
     model = Post
     template_name = "posts/categorias/posts_por_categoria.html"
     context_object_name = "posts"
-    paginate_by = 6 # es la cantidad de posts por página (lo haremos en 2 filas de 3 columnas)
+    # Se actualizó a 6 posts para mostrar 2 filas de 3
+    paginate_by = 6 
 
     def get_queryset(self):
         return Post.objects.filter(
@@ -244,6 +245,34 @@ class CategoriaPostsView(ListView):
 # COMENTARIOS - EDICIÓN Y ELIMINACIÓN (Autor O Colaborador)
 # ==============================================================================
 
+class ComentarioCreateView(LoginRequiredMixin, CreateView):
+    model = Comentario
+    form_class = ComentarioForm
+    template_name = "posts/agregar_comentario.html" # No se usa realmente
+
+    def form_valid(self, form):
+        # 1. Asigna el autor (usuario logueado)
+        form.instance.autor = self.request.user
+        # 2. Asigna el post al que pertenece el comentario
+        pk_post = self.kwargs.get('pk_post')
+        post = get_object_or_404(Post, pk=pk_post)
+        form.instance.post = post
+        
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Redirige al detalle del post después de crear el comentario
+        messages.success(self.request, "Comentario publicado exitosamente.")
+        # La PK del post es la que se pasó en los kwargs
+        return reverse_lazy('posts:detalle_post', kwargs={'pk': self.kwargs.get('pk_post')})
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, "Debes iniciar sesión para comentar.")
+            return redirect('usuarios:login')
+        return super().dispatch(request, *args, **kwargs)
+
+
 class ComentarioUpdateView(LoginRequiredMixin, Autor_o_ColaboradorMixin, UpdateView):
     model = Comentario
     fields = ['contenido'] # Solo permite editar el contenido
@@ -251,6 +280,7 @@ class ComentarioUpdateView(LoginRequiredMixin, Autor_o_ColaboradorMixin, UpdateV
 
     def get_success_url(self):
         # Redirige al detalle del post después de la edición
+        messages.success(self.request, "Comentario actualizado exitosamente.")
         return reverse_lazy('posts:detalle_post', kwargs={'pk': self.object.post.pk})
 
 class ComentarioDeleteView(LoginRequiredMixin, Autor_o_ColaboradorMixin, DeleteView):
@@ -259,4 +289,5 @@ class ComentarioDeleteView(LoginRequiredMixin, Autor_o_ColaboradorMixin, DeleteV
 
     def get_success_url(self):
         # Redirige al detalle del post después de la eliminación
+        messages.success(self.request, "Comentario eliminado exitosamente.")
         return reverse_lazy('posts:detalle_post', kwargs={'pk': self.object.post.pk})
