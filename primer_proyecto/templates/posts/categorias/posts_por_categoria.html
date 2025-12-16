@@ -6,6 +6,42 @@
     Categoría: <span class="text-primary">{{ categoria.nombre }}</span>
 </h2>
 
+{# INICIO: Bloque de ordenamiento (Solo para usuarios registrados) #}
+{% if user.is_authenticated %}
+<div class="d-flex justify-content-end align-items-center mb-4">
+    <span class="text-muted me-2">Ordenar por:</span>
+    
+    {% comment %} 
+        Se generan los enlaces a la misma URL de la categoría, 
+        pero con el parámetro GET 'orden'
+    {% endcomment %}
+
+    <div class="btn-group me-3" role="group">
+        <a href="{% url 'posts:posts_por_categoria' categoria.pk %}?orden=-publicado" 
+           class="btn btn-sm {% if orden_actual == '-publicado' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            Fecha (Reciente)
+        </a>
+        <a href="{% url 'posts:posts_por_categoria' categoria.pk %}?orden=publicado" 
+           class="btn btn-sm {% if orden_actual == 'publicado' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            Fecha (Antiguo)
+        </a>
+    </div>
+
+    <div class="btn-group" role="group">
+        <a href="{% url 'posts:posts_por_categoria' categoria.pk %}?orden=titulo" 
+           class="btn btn-sm {% if orden_actual == 'titulo' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            Título (A-Z)
+        </a>
+        <a href="{% url 'posts:posts_por_categoria' categoria.pk %}?orden=-titulo" 
+           class="btn btn-sm {% if orden_actual == '-titulo' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            Título (Z-A)
+        </a>
+    </div>
+</div>
+{% endif %}
+{# FIN: Bloque de ordenamiento #}
+
+
 {% if posts %}
     <div class="row">
         {% for post in posts %}

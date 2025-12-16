@@ -230,14 +230,32 @@ class CategoriaPostsView(ListView):
     paginate_by = 6 
 
     def get_queryset(self):
-        return Post.objects.filter(
+        # 1. Base del Queryset: Filtrar por categoría y posts activos
+        queryset = Post.objects.filter(
             categoria_id=self.kwargs["pk"],
             activo=True
-        ).order_by("-publicado")
+        )
+
+        # 2. Obtener parámetro de ordenamiento (si existe)
+        orden = self.request.GET.get('orden', None)
+        
+        # 3. Lógica de ordenamiento condicional (Solo para usuarios autenticados)
+        # Se permite el orden si el usuario está autenticado y si el parámetro 'orden' es válido
+        if self.request.user.is_authenticated and orden in ['titulo', '-titulo', 'publicado', '-publicado']:
+            # Aplicar orden solicitado: 'titulo' (asc), '-titulo' (desc), 'publicado' (asc), '-publicado' (desc)
+            queryset = queryset.order_by(orden)
+        else:
+            # Orden por defecto: Más reciente primero
+            queryset = queryset.order_by("-publicado")
+            
+        # Usar select_related para optimizar la consulta
+        return queryset.select_related('categoria', 'autor')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["categoria"] = Categoria.objects.get(pk=self.kwargs["pk"])
+        # Agregar el orden actual al contexto para usarlo en el template
+        context["orden_actual"] = self.request.GET.get('orden', '-publicado') 
         return context
 
 
