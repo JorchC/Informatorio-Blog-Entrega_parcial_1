@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Administrar Usuarios</h2>
+</div>
+
+<hr>
+
+{% if usuarios %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            
+            <thead class="text-white bg-dark"> 
+                <tr>
+                    {% with orden=orden_actual %}
+
+                    <th scope="col">
+                        Nombre
+                        <a href="?orden=nombre" title="Ordenar A-Z" class="text-success {% if orden == 'nombre' %}fw-bold{% endif %}">▲</a>
+                        <a href="?orden=-nombre" title="Ordenar Z-A" class="text-danger {% if orden == '-nombre' %}fw-bold{% endif %}">▼</a>
+                    </th>
+
+                    <th scope="col">
+                        Apellido
+                        <a href="?orden=apellido" title="Ordenar A-Z" class="text-success {% if orden == 'apellido' %}fw-bold{% endif %}">▲</a>
+                        <a href="?orden=-apellido" title="Ordenar Z-A" class="text-danger {% if orden == '-apellido' %}fw-bold{% endif %}">▼</a>
+                    </th>
+
+                    <th scope="col">
+                        Username
+                        <a href="?orden=username" title="Ordenar A-Z" class="text-success {% if orden == 'username' %}fw-bold{% endif %}">▲</a>
+                        <a href="?orden=-username" title="Ordenar Z-A" class="text-danger {% if orden == '-username' %}fw-bold{% endif %}">▼</a>
+                    </th>
+
+                    <th scope="col">
+                        Tipo de Usuario
+                        <a href="?orden=groups__name" title="Ordenar A-Z" class="text-success {% if orden == 'groups__name' %}fw-bold{% endif %}">▲</a>
+                        <a href="?orden=-groups__name" title="Ordenar Z-A" class="text-danger {% if orden == '-groups__name' %}fw-bold{% endif %}">▼</a>
+                    </th>
+
+                    <th scope="col">
+                        Último Acceso
+                        <a href="?orden=-last_login" title="Reciente → Antiguo" class="text-success {% if orden == '-last_login' %}fw-bold{% endif %}">▲</a>
+                        <a href="?orden=last_login" title="Antiguo → Reciente" class="text-danger {% if orden == 'last_login' %}fw-bold{% endif %}">▼</a>
+                    </th>
+                    
+                    <th scope="col">Acciones</th>
+
+                    {% endwith %}
+                </tr>
+            </thead>
+            
+            <tbody>
+                {% for user in usuarios %}
+                <tr>
+                    <td>{{ user.nombre|default:"N/A" }}</td>
+                    <td>{{ user.apellido|default:"N/A" }}</td>
+                    <td>{{ user.username }}</td>
+                    
+                    <td>
+                        {# Se usa is_superuser para tener prioridad, ya que un Superusuario puede ser Miembro de un grupo #}
+                        {% if user.is_superuser %}
+                            <span class="badge bg-danger">Superusuario</span>
+                        {% elif user.groups.all %}
+                            {% with grupo=user.groups.all.0.name %}
+                                <span class="badge {% if grupo == 'Colaborador' %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                                    {{ grupo }}
+                                </span>
+                            {% endwith %}
+                        {% else %}
+                            <span class="badge bg-secondary">Miembro (Sin Grupo)</span>
+                        {% endif %}
+                    </td>
+                    
+                    <td>
+                        {% if user.last_login %}
+                            {{ user.last_login|date:"d/m/Y H:i" }}
+                        {% else %}
+                            Nunca
+                        {% endif %}
+                    </td>
+                    
+                    <td>
+                        {# Lógica del botón Eliminar - AHORA USA LA BANDERA CALCULADA EN LA VISTA #}
+                        {% if user.puede_ser_eliminado %}
+                            <a href="{% url 'usuarios:eliminar_usuario' user.pk %}" class="btn btn-sm btn-danger">
+                                Eliminar
+                            </a>
+                        {% else %}
+                            <button class="btn btn-sm btn-danger" disabled title="No se puede eliminar a un Superusuario o a otro Colaborador.">
+                                Eliminar
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">No se encontraron usuarios para administrar (excluyendo al Superusuario y a ti mismo).</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4">
+        {% include "paginador.html" with orden_actual=orden_actual %} 
+    </div>
+
+{% else %}
+    <p class="text-muted">No se encontraron usuarios para administrar.</p>
+{% endif %}
+
+{% endblock %}
