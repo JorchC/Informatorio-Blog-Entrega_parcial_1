@@ -4,7 +4,7 @@ from django.contrib import messages
 from django import forms
 from apps.posts.models import Post
 
-
+# Definimos el formulario aquí mismo para no crear más archivos
 class ContactoForm(forms.Form):
     nombre = forms.CharField(
         label="Nombre", 
@@ -38,16 +38,16 @@ class HomeView(TemplateView):
         )
         return context
 
-# Acerca de
+# Nueva vista para Acerca de
 class AcercaDeView(TemplateView):
     template_name = "acercaDe.html"
 
-# Formulario de Contacto
+# Nueva vista para el formulario de Contacto
 def contacto(request):
     if request.method == 'POST':
         form = ContactoForm(request.POST)
         if form.is_valid():
-            # Acá hay que configurar todo lo que sea para el e-mail real (el envio digamos)
+            # Aquí podrías implementar el envío de mail real
             messages.success(request, "¡Gracias por contactarnos! Tu mensaje ha sido enviado con éxito.")
             return redirect('index')
     else:

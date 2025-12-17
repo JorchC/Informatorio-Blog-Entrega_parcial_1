@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from .views import HomeView, AcercaDeView, contacto
+from .views import HomeView, AcercaDeView, contacto # Importamos las nuevas vistas
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -25,10 +25,12 @@ urlpatterns = [
 
     # Página principal
     path('', HomeView.as_view(), name='index'),
-    path('acerca-de/', AcercaDeView.as_view(), name='acerca_de'), # acerca de 
-    path('contacto/', contacto, name='contacto'), # contacto
 
-    # Apps s
+    # NUEVAS RUTAS
+    path('acerca-de/', AcercaDeView.as_view(), name='acerca_de'),
+    path('contacto/', contacto, name='contacto'),
+
+    # Apps existentes
     path(
         'posts/',
         include(('apps.posts.urls', 'posts'), namespace='posts')
@@ -36,7 +38,7 @@ urlpatterns = [
     path('usuarios/', include('apps.usuarios.urls')),
 ]
 
-# Archivos media
+# Archivos media en desarrollo
 if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL,
