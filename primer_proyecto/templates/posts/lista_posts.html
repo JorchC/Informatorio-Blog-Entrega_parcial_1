@@ -13,7 +13,7 @@
 
 <hr>
 
-{# --- INICIO DE CONTROLES DE FILTRADO Y ORDENAMIENTO --- #}
+<!--INICIO DE CONTROLES DE FILTRADO Y ORDENAMIENTO -->
 <div class="card p-3 mb-4 shadow-sm bg-light">
     {# El formulario usa el método GET para aplicar los filtros #}
     <form method="GET" class="row g-3 align-items-end">
@@ -33,7 +33,7 @@
             <select name="categoria" id="id_categoria" class="form-select">
                 <option value="todas" {% if categoria_actual_id == 'todas' %}selected{% endif %}>Todas las Categorías</option>
                 
-                {# Iterar sobre las categorías pasadas desde el contexto de la vista #}
+                <!--Iterar sobre las categorías pasadas desde el contexto de la vista-->
                 {% for cat in categorias %}
                     <option value="{{ cat.pk }}" 
                             {# La comparación debe ser con el pk convertido a string para coincidir con el valor GET #}
@@ -50,7 +50,7 @@
 
     </form>
 </div>
-{# --- FIN DE CONTROLES DE FILTRADO Y ORDENAMIENTO --- #}
+<!--  FIN DE CONTROLES DE FILTRADO Y ORDENAMIENTO -->
 
 
 {% if posts %}
